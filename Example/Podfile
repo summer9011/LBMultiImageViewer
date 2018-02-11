@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'LBMultiImageViewer_Example' do
+  pod 'LBMultiImageViewer', :path => '../'
+
+  target 'LBMultiImageViewer_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
