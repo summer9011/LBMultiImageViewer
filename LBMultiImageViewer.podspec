@@ -9,7 +9,7 @@
 Pod::Spec.new do |s|
   s.name             = 'LBMultiImageViewer'
   s.version          = '0.1.0'
-  s.summary          = 'A short description of LBMultiImageViewer.'
+  s.summary          = 'LBMultiImageViewer is lib for preview images from local album or remote server.'
 
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
   s.description      = <<-DESC
-TODO: Add long description of the pod here.
+LBMultiImageViewer is the lib for preview images whatever the image from local album or remote server. It's support to fit very long or very wide image smoothly, and very easy to display large image(the size is over 20M).
                        DESC
 
   s.homepage         = 'https://github.com/summer9011/LBMultiImageViewer'
@@ -28,7 +28,7 @@ TODO: Add long description of the pod here.
   s.source           = { :git => 'https://github.com/summer9011/LBMultiImageViewer.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
-  s.ios.deployment_target = '8.0'
+  s.ios.deployment_target = '9.0'
 
   s.source_files = 'LBMultiImageViewer/Classes/**/*'
   
@@ -39,4 +39,8 @@ TODO: Add long description of the pod here.
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
   # s.dependency 'AFNetworking', '~> 2.3'
+
+  s.frameworks = 'Photos'
+  s.dependency 'SDWebImage'
+
 end
