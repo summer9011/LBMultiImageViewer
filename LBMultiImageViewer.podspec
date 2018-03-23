@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'LBMultiImageViewer'
-  s.version          = '0.1.0'
+  s.version          = '0.1.1'
   s.summary          = 'LBMultiImageViewer is lib for preview images from local album or remote server.'
 
 # This description is used to generate tags and improve search results.
@@ -28,7 +28,7 @@ LBMultiImageViewer is the lib for preview images whatever the image from local a
   s.source           = { :git => 'https://github.com/summer9011/LBMultiImageViewer.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
-  s.ios.deployment_target = '9.0'
+  s.ios.deployment_target = '8.0'
 
   s.source_files = 'LBMultiImageViewer/Classes/**/*'
   
