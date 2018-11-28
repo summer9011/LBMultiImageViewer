@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "LBImageModel.h"
+#import "LBConfigModel.h"
 
 @protocol LBImageScrollDelegate <NSObject>
 
@@ -27,6 +28,8 @@
 
 - (void)didChangeImageView:(NSUInteger)index;
 
+- (void)didPlayVideo:(NSUInteger)index;
+
 - (void)didReloadImageScroll;
 
 - (void)imageViewBeginLoad;
@@ -39,7 +42,7 @@
 
 @property (nonatomic, weak) id<LBImageScrollDelegate> imageScrollDelegate;
 
-- (instancetype)initWithFrame:(CGRect)frame imageIndex:(NSUInteger)index;
+- (instancetype)initWithFrame:(CGRect)frame imageIndex:(NSUInteger)index config:(LBConfigModel *)config;
 
 - (void)showInView:(UIView *)parentView;
 

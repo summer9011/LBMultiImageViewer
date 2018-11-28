@@ -7,6 +7,7 @@
 
 #import "LBDetailScrollView.h"
 #import "LBImageModel.h"
+#import "LBConfigModel.h"
 #import <SDWebImage/UIImageView+WebCache.h>
 #import <Photos/Photos.h>
 
@@ -16,7 +17,7 @@
 
 @implementation LBDetailScrollView
 
-- (instancetype)initWithFrame:(CGRect)frame {
+- (instancetype)initWithFrame:(CGRect)frame config:(LBConfigModel *)config {
     if (self = [super initWithFrame:frame]) {
         self.delegate = self;
         self.backgroundColor = [UIColor colorWithRed:61/255.f green:60/255.f blue:63/255.f alpha:1.f];
@@ -63,7 +64,7 @@
         retryBtn.tag = 103;
         retryBtn.center = imageView.center;
         retryBtn.bounds = CGRectMake(0, 0, 60, 30);
-        [retryBtn setTitle:@"Retry" forState:UIControlStateNormal];
+        [retryBtn setTitle:config.retryTitle forState:UIControlStateNormal];
         [retryBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [retryBtn addTarget:self action:@selector(doReloadImageAction:) forControlEvents:UIControlEventTouchUpInside];
         retryBtn.titleLabel.font = [UIFont systemFontOfSize:12];
@@ -74,6 +75,22 @@
         [self addSubview:retryBtn];
         
         self.reloadBtn = retryBtn;
+        
+        UIButton *playBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        playBtn.tag = 104;
+        playBtn.center = imageView.center;
+        playBtn.bounds = CGRectMake(0, 0, 60, 30);
+        [playBtn setTitle:config.playTitle forState:UIControlStateNormal];
+        [playBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [playBtn addTarget:self action:@selector(doPlayAction:) forControlEvents:UIControlEventTouchUpInside];
+        playBtn.titleLabel.font = [UIFont systemFontOfSize:12];
+        playBtn.layer.cornerRadius = 4.f;
+        playBtn.layer.borderWidth = 0.5;
+        playBtn.layer.borderColor = [UIColor whiteColor].CGColor;
+        playBtn.hidden = YES;
+        [self addSubview:playBtn];
+        
+        self.playBtn = playBtn;
     }
     
     return self;
@@ -98,6 +115,7 @@
             [self.activityView startAnimating];
             
             self.reloadBtn.hidden = YES;
+            self.playBtn.hidden = YES;
             
             self.minimumZoomScale = 1.f;
             self.maximumZoomScale = 1.f;
@@ -106,8 +124,14 @@
             LBImageModel *model = [self.detailDelegate LBDetailScrollGetImageModelWithIndex:index];
             if (model.imageType == LBImageLocal) {
                 [self loadWithLocalImage:model];
-            } else {
+            } else if (model.imageType == LBImageRemote) {
                 [self loadWithRemoteImage:model];
+            } else if (model.imageType == LBImageVideo) {
+                if (model.remoteURLStr != nil) {
+                    [self loadWithVideoRemoteImage:model];
+                } else {
+                    [self loadWithVideoLocalImage:model];
+                }
             }
         }
             break;
@@ -132,9 +156,9 @@
     dispatch_queue_t queue = dispatch_queue_create("lb.fetch.image", NULL);
     dispatch_async(queue, ^{
         PHFetchResult *fetchResult = nil;
-        if (imageModel.localPHAsset) {
+        if (imageModel.localPHAsset != nil) {
             fetchResult = [PHAsset fetchAssetsWithLocalIdentifiers:@[imageModel.localPHAsset.localIdentifier] options:nil];
-        } else {
+        } else if (imageModel.localAssetURL != nil) {
             fetchResult = [PHAsset fetchAssetsWithALAssetURLs:@[imageModel.localAssetURL] options:nil];
         }
         if (fetchResult.count) {
@@ -150,20 +174,17 @@
                 strongSelf.imageView.status = result?LBDetailImageLoaded:LBDetailImageLoadFailed;
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [strongSelf resetImageScrollWithImage:result];
-                    
-                    if (strongSelf.detailDelegate && [strongSelf.detailDelegate respondsToSelector:@selector(LBDetailScrollLoadSuccess:)]) {
-                        [strongSelf.detailDelegate LBDetailScrollLoadSuccess:strongSelf];
-                    }
                 });
             }];
+        } else if (imageModel.defaultImage) {
+            self.imageView.status = LBDetailImageLoaded;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self resetImageScrollWithImage:imageModel.defaultImage];
+            });
         } else {
             self.imageView.status = LBDetailImageLoadFailed;
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self resetImageScrollWithImage:nil];
-                
-                if (self.detailDelegate && [self.detailDelegate respondsToSelector:@selector(LBDetailScrollLoadSuccess:)]) {
-                    [self.detailDelegate LBDetailScrollLoadSuccess:self];
-                }
             });
         }
     });
@@ -183,6 +204,29 @@
     }];
 }
 
+- (void)loadWithVideoRemoteImage:(LBImageModel *)imageModel {
+    NSURL *imageURL = [NSURL URLWithString:imageModel.remoteURLStr];
+    
+    __weak LBDetailScrollView *weakSelf = self;
+    [self.imageView sd_setImageWithURL:imageURL placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+        __strong LBDetailScrollView *strongSelf = weakSelf;
+        
+        strongSelf.imageView.status = image?LBDetailImageLoaded:LBDetailImageLoadFailed;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            strongSelf.playBtn.hidden = NO;
+            [strongSelf resetImageScrollWithImage:image];
+        });
+    }];
+}
+
+- (void)loadWithVideoLocalImage:(LBImageModel *)imageModel {
+    self.imageView.status = LBDetailImageLoaded;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self.playBtn.hidden = NO;
+        [self resetImageScrollWithImage:imageModel.defaultImage];
+    });
+}
+
 - (void)resetImageScrollWithImage:(UIImage *)image {
     self.activityView.hidden = YES;
     [self.activityView stopAnimating];
@@ -198,14 +242,10 @@
         self.imageView.image = nil;
         
         self.reloadBtn.center = self.imageView.center;
+        self.playBtn.center = self.imageView.center;
         
         self.minimumZoomScale = 1.f;
         self.maximumZoomScale = 1.f;
-        
-        if (self.detailDelegate && [self.detailDelegate respondsToSelector:@selector(LBDetailScrollBeginLoad:)]) {
-            [self.detailDelegate LBDetailScrollBeginLoad:self];
-        }
-        
     } else {
         self.reloadBtn.hidden = YES;
         
@@ -219,10 +259,10 @@
         
         self.minimumZoomScale = self.imageView.minScale;
         self.maximumZoomScale = self.minimumZoomScale * 2;
-        
-        if (self.detailDelegate && [self.detailDelegate respondsToSelector:@selector(LBDetailScrollLoadSuccess:)]) {
-            [self.detailDelegate LBDetailScrollLoadSuccess:self];
-        }
+    }
+    
+    if (self.detailDelegate && [self.detailDelegate respondsToSelector:@selector(LBDetailScrollLoadSuccess:)]) {
+        [self.detailDelegate LBDetailScrollLoadSuccess:self];
     }
     
     [self.imageView sizeToFit];
@@ -241,6 +281,7 @@
         self.imageView.image = nil;
         
         self.reloadBtn.center = self.imageView.center;
+        self.playBtn.center = self.imageView.center;
         
         self.minimumZoomScale = 1.f;
         self.maximumZoomScale = 1.f;
@@ -254,6 +295,12 @@
     
     if (self.detailDelegate && [self.detailDelegate respondsToSelector:@selector(LBDetailScrollReloadImage:)]) {
         [self.detailDelegate LBDetailScrollReloadImage:self];
+    }
+}
+
+- (void)doPlayAction:(UIButton *)button {
+    if (self.detailDelegate && [self.detailDelegate respondsToSelector:@selector(LBDetailScrollPlayVideo:)]) {
+        [self.detailDelegate LBDetailScrollPlayVideo:self];
     }
 }
 

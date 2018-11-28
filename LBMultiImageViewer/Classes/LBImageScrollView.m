@@ -15,6 +15,8 @@
 
 @property (nonatomic, weak) UIScrollView *contentScrollView;
 
+@property (nonatomic, strong) LBConfigModel *config;
+
 @end
 
 @implementation LBImageScrollView
@@ -22,14 +24,18 @@
 #pragma mark - Init
 
 - (instancetype)initWithFrame:(CGRect)frame {
-    return [self initWithFrame:frame imageIndex:0];
+    LBConfigModel *config = [[LBConfigModel alloc] init];
+    config.retryTitle = @"Retry";
+    config.playTitle = @"Play";
+    return [self initWithFrame:frame imageIndex:0 config:config];
 }
 
-- (instancetype)initWithFrame:(CGRect)frame imageIndex:(NSUInteger)index {
+- (instancetype)initWithFrame:(CGRect)frame imageIndex:(NSUInteger)index config:(LBConfigModel *)config {
     self = [super initWithFrame:frame];
     
     if (self) {
         _currentImageIndex = index;
+        _config = config;
         [self initSelfView];
     }
     
@@ -93,7 +99,7 @@
     NSUInteger imageCount = [self.imageScrollDelegate numberOfItems];
     
     for (int i = 0; i < imageCount; i ++) {
-        LBDetailScrollView *scrollView = [[LBDetailScrollView alloc] initWithFrame:CGRectMake((CGRectGetWidth(bounds) + LBImageScrollOffset) * i, 0, CGRectGetWidth(bounds), CGRectGetHeight(bounds))];
+        LBDetailScrollView *scrollView = [[LBDetailScrollView alloc] initWithFrame:CGRectMake((CGRectGetWidth(bounds) + LBImageScrollOffset) * i, 0, CGRectGetWidth(bounds), CGRectGetHeight(bounds)) config:self.config];
         scrollView.detailDelegate = self;
         [self.contentScrollView addSubview:scrollView];
     }
@@ -185,6 +191,13 @@
     NSUInteger index = [self.contentScrollView.subviews indexOfObject:scrollView];
     if (index == self.currentImageIndex && [self.imageScrollDelegate respondsToSelector:@selector(imageViewLoadSuccess)]) {
         [self.imageScrollDelegate imageViewLoadSuccess];
+    }
+}
+
+- (void)LBDetailScrollPlayVideo:(LBDetailScrollView *)scrollView {
+    NSUInteger index = [self.contentScrollView.subviews indexOfObject:scrollView];
+    if (index == self.currentImageIndex && [self.imageScrollDelegate respondsToSelector:@selector(didPlayVideo:)]) {
+        [self.imageScrollDelegate didPlayVideo:index];
     }
 }
 

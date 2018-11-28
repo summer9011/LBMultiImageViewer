@@ -13,6 +13,7 @@
 
 @class LBDetailScrollView;
 @class LBImageModel;
+@class LBConfigModel;
 
 @protocol LBDetailScrollViewDelegate <NSObject>
 
@@ -34,6 +35,8 @@
 
 - (void)LBDetailScrollLoadSuccess:(LBDetailScrollView *)scrollView;
 
+- (void)LBDetailScrollPlayVideo:(LBDetailScrollView *)scrollView;
+
 @end
 
 @interface LBDetailScrollView : UIScrollView
@@ -43,6 +46,9 @@
 @property (nonatomic, weak) LBDetailImageView *imageView;
 @property (nonatomic, weak) UIActivityIndicatorView *activityView;
 @property (nonatomic, weak) UIButton *reloadBtn;
+@property (nonatomic, weak) UIButton *playBtn;
+
+- (instancetype)initWithFrame:(CGRect)frame config:(LBConfigModel *)config;
 
 - (void)setImageContentWithIndex:(NSUInteger)index;
 

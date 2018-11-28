@@ -10,7 +10,8 @@
 
 typedef NS_ENUM(NSUInteger, LBImageType) {
     LBImageLocal = 0,
-    LBImageRemote = 1
+    LBImageRemote = 1,
+    LBImageVideo = 2
 };
 
 @interface LBImageModel : NSObject
@@ -22,10 +23,13 @@ typedef NS_ENUM(NSUInteger, LBImageType) {
 
 @property (nonatomic, strong) UIImage *defaultImage;
 
+- (instancetype)initWithImage:(UIImage *)image;
+
 - (instancetype)initWithLocalPHAsset:(PHAsset *)localPHAsset;
-
 - (instancetype)initWithLocalAssetURL:(NSURL *)localAssetURL;
-
 - (instancetype)initWithRemoteURLStr:(NSString *)remoteURLStr;
+
+- (instancetype)initWithVideoPreviewImage:(UIImage *)image;
+- (instancetype)initWithVideoRemotePreviewImageURLStr:(NSString *)remoteURLStr;
 
 @end
