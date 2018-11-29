@@ -173,18 +173,18 @@
                 
                 strongSelf.imageView.status = result?LBDetailImageLoaded:LBDetailImageLoadFailed;
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    [strongSelf resetImageScrollWithImage:result];
+                    [strongSelf resetImageScrollWithImage:result videoMode:NO];
                 });
             }];
         } else if (imageModel.defaultImage) {
             self.imageView.status = LBDetailImageLoaded;
             dispatch_async(dispatch_get_main_queue(), ^{
-                [self resetImageScrollWithImage:imageModel.defaultImage];
+                [self resetImageScrollWithImage:imageModel.defaultImage videoMode:NO];
             });
         } else {
             self.imageView.status = LBDetailImageLoadFailed;
             dispatch_async(dispatch_get_main_queue(), ^{
-                [self resetImageScrollWithImage:nil];
+                [self resetImageScrollWithImage:nil videoMode:NO];
             });
         }
     });
@@ -199,7 +199,7 @@
         
         strongSelf.imageView.status = image?LBDetailImageLoaded:LBDetailImageLoadFailed;
         dispatch_async(dispatch_get_main_queue(), ^{
-            [strongSelf resetImageScrollWithImage:image];
+            [strongSelf resetImageScrollWithImage:image videoMode:NO];
         });
     }];
 }
@@ -213,8 +213,7 @@
         
         strongSelf.imageView.status = image?LBDetailImageLoaded:LBDetailImageLoadFailed;
         dispatch_async(dispatch_get_main_queue(), ^{
-            strongSelf.playBtn.hidden = NO;
-            [strongSelf resetImageScrollWithImage:image];
+            [strongSelf resetImageScrollWithImage:image videoMode:YES];
         });
     }];
 }
@@ -222,12 +221,11 @@
 - (void)loadWithVideoLocalImage:(LBImageModel *)imageModel {
     self.imageView.status = LBDetailImageLoaded;
     dispatch_async(dispatch_get_main_queue(), ^{
-        self.playBtn.hidden = NO;
-        [self resetImageScrollWithImage:imageModel.defaultImage];
+        [self resetImageScrollWithImage:imageModel.defaultImage videoMode:YES];
     });
 }
 
-- (void)resetImageScrollWithImage:(UIImage *)image {
+- (void)resetImageScrollWithImage:(UIImage *)image videoMode:(BOOL)videoMode {
     self.activityView.hidden = YES;
     [self.activityView stopAnimating];
     
@@ -248,6 +246,8 @@
         self.maximumZoomScale = 1.f;
     } else {
         self.reloadBtn.hidden = YES;
+        self.playBtn.hidden = !videoMode;
+        self.playBtn.center = self.imageView.center;
         
         self.imageView.minScale = [self minScaleFor:image];
         
@@ -258,7 +258,12 @@
         self.imageView.image = image;
         
         self.minimumZoomScale = self.imageView.minScale;
-        self.maximumZoomScale = self.minimumZoomScale * 2;
+        if (videoMode) {
+            self.maximumZoomScale = self.imageView.minScale;
+        } else {
+            self.maximumZoomScale = self.minimumZoomScale * 2;
+        }
+        
     }
     
     if (self.detailDelegate && [self.detailDelegate respondsToSelector:@selector(LBDetailScrollLoadSuccess:)]) {
