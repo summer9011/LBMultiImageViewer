@@ -52,7 +52,6 @@
         [singleTap requireGestureRecognizerToFail:doubleTap];
         
         UIActivityIndicatorView *activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-        activityView.tag = 102;
         activityView.hidesWhenStopped = YES;
         activityView.center = imageView.center;
         activityView.hidden = YES;
@@ -61,7 +60,6 @@
         self.activityView = activityView;
         
         UIButton *retryBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-        retryBtn.tag = 103;
         retryBtn.center = imageView.center;
         retryBtn.bounds = CGRectMake(0, 0, 60, 30);
         [retryBtn setTitle:config.retryTitle forState:UIControlStateNormal];
@@ -77,17 +75,21 @@
         self.reloadBtn = retryBtn;
         
         UIButton *playBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-        playBtn.tag = 104;
         playBtn.center = imageView.center;
-        playBtn.bounds = CGRectMake(0, 0, 60, 30);
-        [playBtn setTitle:config.playTitle forState:UIControlStateNormal];
-        [playBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [playBtn addTarget:self action:@selector(doPlayAction:) forControlEvents:UIControlEventTouchUpInside];
-        playBtn.titleLabel.font = [UIFont systemFontOfSize:12];
-        playBtn.layer.cornerRadius = 4.f;
-        playBtn.layer.borderWidth = 0.5;
-        playBtn.layer.borderColor = [UIColor whiteColor].CGColor;
-        playBtn.hidden = YES;
+        if (config.playImage != nil) {
+            playBtn.bounds = CGRectMake(0, 0, 60, 60);
+            [playBtn setImage:config.playImage forState:UIControlStateNormal];
+        } else {
+            playBtn.bounds = CGRectMake(0, 0, 60, 30);
+            [playBtn setTitle:config.playTitle forState:UIControlStateNormal];
+            [playBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+            playBtn.titleLabel.font = [UIFont systemFontOfSize:12];
+            playBtn.layer.cornerRadius = 4.f;
+            playBtn.layer.borderWidth = 0.5;
+            playBtn.layer.borderColor = [UIColor whiteColor].CGColor;
+        }
+//        playBtn.hidden = YES;
         [self addSubview:playBtn];
         
         self.playBtn = playBtn;
@@ -115,7 +117,7 @@
             [self.activityView startAnimating];
             
             self.reloadBtn.hidden = YES;
-            self.playBtn.hidden = YES;
+//            self.playBtn.hidden = YES;
             
             self.minimumZoomScale = 1.f;
             self.maximumZoomScale = 1.f;
@@ -246,7 +248,7 @@
         self.maximumZoomScale = 1.f;
     } else {
         self.reloadBtn.hidden = YES;
-        self.playBtn.hidden = !videoMode;
+//        self.playBtn.hidden = !videoMode;
         self.playBtn.center = self.imageView.center;
         
         self.imageView.minScale = [self minScaleFor:image];

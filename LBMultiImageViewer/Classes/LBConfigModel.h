@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, copy) NSString *retryTitle;
 @property (nonatomic, copy) NSString *playTitle;
+@property (nonatomic, strong) UIImage *playImage;
 
 @end
 
