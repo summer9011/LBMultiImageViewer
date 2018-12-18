@@ -89,7 +89,7 @@
             playBtn.layer.borderWidth = 0.5;
             playBtn.layer.borderColor = [UIColor whiteColor].CGColor;
         }
-//        playBtn.hidden = YES;
+        playBtn.hidden = YES;
         [self addSubview:playBtn];
         
         self.playBtn = playBtn;
@@ -117,7 +117,7 @@
             [self.activityView startAnimating];
             
             self.reloadBtn.hidden = YES;
-//            self.playBtn.hidden = YES;
+            self.playBtn.hidden = YES;
             
             self.minimumZoomScale = 1.f;
             self.maximumZoomScale = 1.f;
@@ -248,7 +248,7 @@
         self.maximumZoomScale = 1.f;
     } else {
         self.reloadBtn.hidden = YES;
-//        self.playBtn.hidden = !videoMode;
+        self.playBtn.hidden = !videoMode;
         self.playBtn.center = self.imageView.center;
         
         self.imageView.minScale = [self minScaleFor:image];
